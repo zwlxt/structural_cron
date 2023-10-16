@@ -222,6 +222,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(unused_must_use)]
     fn clone() {
         CronExpr::default().clone();
     }
