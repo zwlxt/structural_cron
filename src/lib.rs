@@ -1,6 +1,8 @@
 mod expr;
+mod format;
 
 pub use expr::*;
+pub use format::*;
 
 #[cfg(test)]
 pub(crate) mod tests {

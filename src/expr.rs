@@ -1,69 +1,63 @@
-use std::ops::RangeInclusive;
+use std::{ops::RangeInclusive, fmt::Debug};
 
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub struct CronExpr {
-    pub second: Field<u8>,
-    pub minute: Field<u8>,
-    pub hour: Field<u8>,
-    pub day: Field<u8>,
-    pub month: Field<Month>,
-    pub day_of_week: Field<DayOfWeek>,
+    pub second: Field,
+    pub minute: Field,
+    pub hour: Field,
+    pub day: Field,
+    pub month: Field,
+    pub day_of_week: Field,
 }
 
 impl CronExpr {
     pub fn check_time<T: Into<DateTime>>(&self, dt: T) -> bool {
         let dt: DateTime = dt.into();
 
-        self.second.check(dt.second)
-            && self.minute.check(dt.minute)
-            && self.hour.check(dt.hour)
-            && self.day.check(dt.day)
-            && self.month.check(dt.month)
-            && self.day_of_week.check(dt.day_of_week)
+        self.second.check(&dt.second)
+            && self.minute.check(&dt.minute)
+            && self.hour.check(&dt.hour)
+            && self.day.check(&dt.day)
+            && self.month.check(&dt.month.into())
+            && self.day_of_week.check(&dt.day_of_week.into())
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum Field<V> {
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum Field {
     All,
-    Value(V),
-    Range(RangeInclusive<V>),
-    List(Vec<ListValue<V>>),
+    Value(u8),
+    Range(RangeInclusive<u8>),
+    List(Vec<ListValue>),
     Step(StepValue, u8),
 }
 
-impl<V> Default for Field<V> {
+impl Default for Field {
     fn default() -> Self {
         Self::All
     }
 }
 
-impl<V> Field<V>
-where
-    V: PartialEq + Eq + PartialOrd + Ord + Into<u8>,
-{
-    fn check(&self, value: V) -> bool {
+impl Field {
+    fn check(&self, value: &u8) -> bool {
         match self {
             Field::All => true,
-            Field::Value(v) => v == &value,
-            Field::Range(r) => r.contains(&value),
-            Field::List(l) => l.iter().any(|v| v.check(&value)),
-            Field::Step(r, s) => r.check(s, &value.into()),
+            Field::Value(v) => v == value,
+            Field::Range(r) => r.contains(value),
+            Field::List(l) => l.iter().any(|v| v.check(value)),
+            Field::Step(r, s) => r.check(s, value),
         }
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum ListValue<V> {
-    Value(V),
-    Range(RangeInclusive<V>),
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum ListValue {
+    Value(u8),
+    Range(RangeInclusive<u8>),
 }
 
-impl<V> ListValue<V>
-where
-    V: PartialEq + Eq + PartialOrd + Ord,
-{
-    fn check(&self, value: &V) -> bool {
+impl ListValue {
+    fn check(&self, value: &u8) -> bool {
         match self {
             ListValue::Value(v) => v == value,
             ListValue::Range(r) => r.contains(value),
@@ -71,7 +65,7 @@ where
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum StepValue {
     All,
     Range(RangeInclusive<u8>),
@@ -220,5 +214,15 @@ mod tests {
         };
 
         assert!(expr.check_time(datetime!(2023-10-11 16:50:10 3)));
+    }
+
+    #[test]
+    fn equality() {
+        assert_eq!(CronExpr::default(), CronExpr::default());
+    }
+
+    #[test]
+    fn clone() {
+        CronExpr::default().clone();
     }
 }
