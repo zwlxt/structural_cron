@@ -1,4 +1,4 @@
-use std::{ops::RangeInclusive, fmt::Debug};
+use std::{ops::RangeInclusive, fmt::{Debug, Display}, error::Error};
 
 #[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub struct CronExpr {
@@ -132,6 +132,14 @@ impl TryFrom<u8> for DayOfWeek {
 #[derive(Debug)]
 pub struct ParseDayOfWeekError;
 
+impl Display for ParseDayOfWeekError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        <ParseDayOfWeekError as Debug>::fmt(&self, f)
+    }
+}
+
+impl Error for ParseDayOfWeekError {}
+
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Month {
     Jan,
@@ -191,6 +199,14 @@ impl TryFrom<u8> for Month {
 
 #[derive(Debug)]
 pub struct ParseMonthError;
+
+impl Display for ParseMonthError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        <ParseMonthError as Debug>::fmt(&self, f)
+    }
+}
+
+impl Error for ParseMonthError {}
 
 pub struct DateTime {
     pub second: u8,

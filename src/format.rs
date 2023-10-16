@@ -1,4 +1,4 @@
-use std::ops::RangeInclusive;
+use std::{ops::RangeInclusive, error::Error, fmt::{Display, Debug}};
 
 use crate::{CronExpr, Field, ListValue, StepValue};
 
@@ -36,6 +36,14 @@ pub enum ParseError {
     Field,
     Incomplete,
 }
+
+impl Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        <ParseError as Debug>::fmt(&self, f)
+    }
+}
+
+impl Error for ParseError {}
 
 pub type ParseResult<T> = core::result::Result<T, ParseError>;
 
