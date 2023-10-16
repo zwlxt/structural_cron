@@ -13,8 +13,8 @@ pub(crate) mod tests {
                 minute: $mi,
                 hour: $hh,
                 day: $dd,
-                month: crate::Month::try_from($mm).unwrap(),
-                day_of_week: crate::DayOfWeek::try_from($w).unwrap(),
+                month: $mm,
+                day_of_week: $w,
             }
         };
     }

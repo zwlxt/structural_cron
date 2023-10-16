@@ -1,4 +1,4 @@
-use std::{ops::RangeInclusive, fmt::{Debug, Display}, error::Error};
+use std::ops::RangeInclusive;
 
 #[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub struct CronExpr {
@@ -87,134 +87,33 @@ impl StepValue {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum DayOfWeek {
-    Sun,
-    Mon,
-    Tue,
-    Wed,
-    Thu,
-    Fri,
-    Sat,
-}
-
-impl Into<u8> for DayOfWeek {
-    fn into(self) -> u8 {
-        match self {
-            DayOfWeek::Sun => 0,
-            DayOfWeek::Mon => 1,
-            DayOfWeek::Tue => 2,
-            DayOfWeek::Wed => 3,
-            DayOfWeek::Thu => 4,
-            DayOfWeek::Fri => 5,
-            DayOfWeek::Sat => 6,
-        }
-    }
-}
-
-impl TryFrom<u8> for DayOfWeek {
-    type Error = ParseDayOfWeekError;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Ok(match value {
-            0 => DayOfWeek::Sun,
-            1 => DayOfWeek::Mon,
-            2 => DayOfWeek::Tue,
-            3 => DayOfWeek::Wed,
-            4 => DayOfWeek::Thu,
-            5 => DayOfWeek::Fri,
-            6 => DayOfWeek::Sat,
-            _ => Err(ParseDayOfWeekError)?,
-        })
-    }
-}
-
-#[derive(Debug)]
-pub struct ParseDayOfWeekError;
-
-impl Display for ParseDayOfWeekError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        <ParseDayOfWeekError as Debug>::fmt(&self, f)
-    }
-}
-
-impl Error for ParseDayOfWeekError {}
-
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Month {
-    Jan,
-    Feb,
-    Mar,
-    Apr,
-    May,
-    Jun,
-    Jul,
-    Aug,
-    Sep,
-    Oct,
-    Nov,
-    Dec,
-}
-
-impl Into<u8> for Month {
-    fn into(self) -> u8 {
-        match self {
-            Month::Jan => 1,
-            Month::Feb => 2,
-            Month::Mar => 3,
-            Month::Apr => 4,
-            Month::May => 5,
-            Month::Jun => 6,
-            Month::Jul => 7,
-            Month::Aug => 8,
-            Month::Sep => 9,
-            Month::Oct => 10,
-            Month::Nov => 11,
-            Month::Dec => 12,
-        }
-    }
-}
-
-impl TryFrom<u8> for Month {
-    type Error = ParseMonthError;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        Ok(match value {
-            1 => Month::Jan,
-            2 => Month::Feb,
-            3 => Month::Mar,
-            4 => Month::Apr,
-            5 => Month::May,
-            6 => Month::Jun,
-            7 => Month::Jul,
-            8 => Month::Aug,
-            9 => Month::Sep,
-            10 => Month::Oct,
-            11 => Month::Nov,
-            12 => Month::Dec,
-            _ => Err(ParseMonthError)?,
-        })
-    }
-}
-
-#[derive(Debug)]
-pub struct ParseMonthError;
-
-impl Display for ParseMonthError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        <ParseMonthError as Debug>::fmt(&self, f)
-    }
-}
-
-impl Error for ParseMonthError {}
-
 pub struct DateTime {
     pub second: u8,
     pub minute: u8,
     pub hour: u8,
     pub day: u8,
-    pub month: Month,
-    pub day_of_week: DayOfWeek,
+    pub month: u8,
+    pub day_of_week: u8,
+}
+
+#[cfg(feature = "time_rs")]
+pub mod time_rs_conversion {
+    use ::time::OffsetDateTime;
+
+    use crate::DateTime;
+
+    impl Into<DateTime> for OffsetDateTime {
+        fn into(self) -> DateTime {
+            DateTime {
+                second: self.second(),
+                minute: self.minute(),
+                hour: self.hour(),
+                day: self.hour(),
+                month: self.month() as u8,
+                day_of_week: self.weekday().number_days_from_sunday(),
+            }
+        }
+    }
 }
 
 #[cfg(test)]
