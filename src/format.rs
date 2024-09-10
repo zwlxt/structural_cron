@@ -166,6 +166,31 @@ fn write_step_value(sv: &StepValue, s: u8) -> String {
     format!("{}/{}", sv, s)
 }
 
+#[cfg(feature = "serde")]
+mod serde {
+    use crate::CronExpr;
+    use serde::{Deserialize, Serialize};
+
+    impl Serialize for CronExpr {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            serializer.serialize_str(&self.to_string())
+        }
+    }
+
+    impl<'de> Deserialize<'de> for CronExpr {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            let expr = String::deserialize(deserializer)?;
+            Ok(CronExpr::parse(&expr).map_err(|e| serde::de::Error::custom(e.to_string()))?)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{CronExpr, Field, ListValue, StepValue};
@@ -193,8 +218,20 @@ mod tests {
             hour: Field::List(vec![ListValue::Range(13..=15), ListValue::Value(18)]),
             day_of_week: Field::Range(1..=5),
             ..Default::default()
-        }.to_string();
+        }
+        .to_string();
 
         assert_eq!("30 0-30/5 13-15,18 * * 1-5", expr);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn serde() {
+        use serde_test::{assert_tokens, Token};
+
+        assert_tokens(
+            &CronExpr::parse("30 0-30/5 13-15,18 * * 1-5").unwrap(),
+            &[Token::Str("30 0-30/5 13-15,18 * * 1-5")],
+        );
     }
 }

@@ -7,6 +7,11 @@ edition = "2021"
 
 [dependencies]
 time = { version = "0.3.30", optional = true }
+serde = { version = "1", optional = true }
 
 [features]
 time_rs = ["dep:time"]
+serde = ["dep:serde"]
+
+[dev-dependencies]
+serde_test = "1"
