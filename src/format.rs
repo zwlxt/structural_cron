@@ -1,4 +1,8 @@
-use std::{ops::RangeInclusive, error::Error, fmt::{Display, Debug}};
+use std::{
+    error::Error,
+    fmt::{Debug, Display},
+    ops::RangeInclusive,
+};
 
 use crate::{CronExpr, Field, ListValue, StepValue};
 
@@ -27,6 +31,20 @@ impl CronExpr {
             month,
             day_of_week,
         })
+    }
+}
+
+impl ToString for CronExpr {
+    fn to_string(&self) -> String {
+        format!(
+            "{} {} {} {} {} {}",
+            write_field(&self.second),
+            write_field(&self.minute),
+            write_field(&self.hour),
+            write_field(&self.day),
+            write_field(&self.month),
+            write_field(&self.day_of_week)
+        )
     }
 }
 
@@ -114,6 +132,40 @@ fn parse_list(field: &str) -> Option<Vec<ListValue>> {
     Some(list)
 }
 
+fn write_field(field: &Field) -> String {
+    match field {
+        Field::All => String::from("*"),
+        Field::Value(v) => v.to_string(),
+        Field::Range(r) => write_range(r),
+        Field::List(l) => l
+            .iter()
+            .map(write_list_value)
+            .collect::<Vec<String>>()
+            .join(","),
+        Field::Step(sv, s) => write_step_value(sv, *s),
+    }
+}
+
+fn write_list_value(list_val: &ListValue) -> String {
+    match list_val {
+        ListValue::Value(v) => v.to_string(),
+        ListValue::Range(r) => write_range(r),
+    }
+}
+
+fn write_range(r: &RangeInclusive<u8>) -> String {
+    format!("{}-{}", r.start(), r.end())
+}
+
+fn write_step_value(sv: &StepValue, s: u8) -> String {
+    let sv = match sv {
+        StepValue::All => String::from("*"),
+        StepValue::Range(r) => write_range(r),
+    };
+
+    format!("{}/{}", sv, s)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{CronExpr, Field, ListValue, StepValue};
@@ -131,5 +183,18 @@ mod tests {
             },
             expr
         );
+    }
+
+    #[test]
+    fn expr_to_string() {
+        let expr = CronExpr {
+            second: Field::Value(30),
+            minute: Field::Step(StepValue::Range(0..=30), 5),
+            hour: Field::List(vec![ListValue::Range(13..=15), ListValue::Value(18)]),
+            day_of_week: Field::Range(1..=5),
+            ..Default::default()
+        }.to_string();
+
+        assert_eq!("30 0-30/5 13-15,18 * * 1-5", expr);
     }
 }
