@@ -34,9 +34,10 @@ impl CronExpr {
     }
 }
 
-impl ToString for CronExpr {
-    fn to_string(&self) -> String {
-        format!(
+impl Display for CronExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
             "{} {} {} {} {} {}",
             write_field(&self.second),
             write_field(&self.minute),
