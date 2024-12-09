@@ -25,7 +25,7 @@ impl CronExpr {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Field {
-    All,
+    Any,
     Value(u8),
     Range(RangeInclusive<u8>),
     List(Vec<ListValue>),
@@ -34,14 +34,14 @@ pub enum Field {
 
 impl Default for Field {
     fn default() -> Self {
-        Self::All
+        Self::Any
     }
 }
 
 impl Field {
     fn check(&self, value: &u8) -> bool {
         match self {
-            Field::All => true,
+            Field::Any => true,
             Field::Value(v) => v == value,
             Field::Range(r) => r.contains(value),
             Field::List(l) => l.iter().any(|v| v.check(value)),

@@ -68,7 +68,7 @@ pub type ParseResult<T> = core::result::Result<T, ParseError>;
 
 fn parse_field(field: &str) -> ParseResult<Field> {
     if field == "*" {
-        return Ok(Field::All);
+        return Ok(Field::Any);
     }
 
     if let Ok(int_val) = field.parse::<u8>() {
@@ -135,7 +135,7 @@ fn parse_list(field: &str) -> Option<Vec<ListValue>> {
 
 fn write_field(field: &Field) -> String {
     match field {
-        Field::All => String::from("*"),
+        Field::Any => String::from("*"),
         Field::Value(v) => v.to_string(),
         Field::Range(r) => write_range(r),
         Field::List(l) => l
