@@ -18,8 +18,8 @@ impl CronExpr {
             && self.minute.check(&dt.minute)
             && self.hour.check(&dt.hour)
             && self.day.check(&dt.day)
-            && self.month.check(&dt.month.into())
-            && self.day_of_week.check(&dt.day_of_week.into())
+            && self.month.check(&dt.month)
+            && self.day_of_week.check(&dt.day_of_week)
     }
 }
 
@@ -76,7 +76,7 @@ impl StepValue {
         match self {
             StepValue::All => value % step == 0,
             StepValue::Range(r) => {
-                if !r.contains(&value) {
+                if !r.contains(value) {
                     return false;
                 }
 

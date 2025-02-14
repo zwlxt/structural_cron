@@ -58,7 +58,7 @@ pub enum ParseError {
 
 impl Display for ParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        <ParseError as Debug>::fmt(&self, f)
+        <ParseError as Debug>::fmt(self, f)
     }
 }
 
